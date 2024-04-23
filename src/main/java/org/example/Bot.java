@@ -6,16 +6,18 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.Voice;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import javax.imageio.ImageIO;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Bot extends TelegramLongPollingBot {
@@ -28,8 +30,15 @@ public class Bot extends TelegramLongPollingBot {
     private String mod;
     private int ID_order;   //id заявки для которой нужно сохранить фото
 
+    // НАСТРОЙКИ
+    private String PHOTO_DIR = "I:\\WorkSpace\\TBotRepairExcelDB\\res\\";   //директория, где буду сохраняться фото
+    private String EXCEL_DB_DIR_AND_NAME = "I:\\WorkSpace\\TBotRepairExcelDB\\РЕМОНТ.xlsm"; //полный путь с именем к файлу excel с заявками
+    private int START_ROW = 1;   //строка начала заявок
+    private int STATUS_COLUMN = 1;   //номер колонки со статусом заявки
+    private int NAME_OF_THE_TOOL_COLUMN = 2;    //номер колонки с названием инструмента
+
     Bot() {
-        RepaerFile.createExcel("C:\\Users\\Cashless\\Desktop\\Проекты\\DataForTelegramBot\\TBotRepairExcelDB\\РЕМОНТ.xlsm", 0);
+        initKeyboard();
     }
 
     @Override
@@ -48,23 +57,38 @@ public class Bot extends TelegramLongPollingBot {
 
             if (update.getMessage().hasPhoto()) {
 
-                BufferedImage imgB = null;
-                //если не будет работать корректно(устанавливать соединение),
-                // значит нужно делать запрос с fileId(https://api.telegram.org/bot<token>/getfile?file_id={the file_id of the photo you want to download}),
-                // получать filepath, и уже его вставлять в форму https://api.telegram.org/file/bot<token>/<file_path> СДЕЛАНО!!!
-                imgB = ImageIO.read(downloadImg("https://api.telegram.org/file/bot" + getBotToken() + "/" + getFilePath(update.getMessage().getPhoto().get(3).getFileId())));
+                String response;
 
-                //создаем папку (если ее еще нет)(название должно быть максимально статично) для текущей заявки, и сохраняем туда фото
+                if (ID_order != 0) {    //проверка на не заданный id заявки
 
+                    //создаем папку (если ее еще нет)(название должно быть максимально статично) для текущей заявки, и сохраняем туда фото
+                    //загрузка и сохранение в файл фото
+                    InputStream inputStream = downloadImg("https://api.telegram.org/file/bot" + getBotToken() + "/" + getFilePath(update.getMessage().getPhoto().get(3).getFileId()));
+                    new File(PHOTO_DIR + ID_order).mkdirs();
+                    OutputStream outputStream = new FileOutputStream(PHOTO_DIR + ID_order + "\\" + update.getMessage().getPhoto().get(3).getFileUniqueId() + ".jpg");
+                    byte[] buffer = new byte[2048];
+
+                    int length = 0;
+
+                    while ((length = inputStream.read(buffer)) != -1) {
+                        System.out.println("Buffer Read of length: " + length);
+                        outputStream.write(buffer, 0, length);
+                    }
+
+                    inputStream.close();
+                    outputStream.close();
+
+                    response = "Фото получено!";
+                    //end
+                } else {response = "Не был задан номер заявки!";}
 
                 Message inMess = update.getMessage();
                 String chatId = inMess.getChatId().toString();
-                //ищем сначало продукт по штрих коду в одной базе, потом в другой ищем цену и артикул по названию
 
                 SendMessage outMess = new SendMessage();
 
                 outMess.setChatId(chatId);
-                outMess.setText("Фото получено!");
+                outMess.setText(response);
                 outMess.setReplyMarkup(replyKeyboardMarkup);
 
                 execute(outMess);
@@ -80,18 +104,17 @@ public class Bot extends TelegramLongPollingBot {
                 //Получаем текст сообщения пользователя, отправляем в написанный нами обработчик
                 String response = parseMessage(inMess.getText());
 
-                response = getActiveOrders(response);
-
                 //Создаем объект класса SendMessage - наш будущий ответ пользователю
                 SendMessage outMess = new SendMessage();
 
                 //Добавляем в наше сообщение id чата а также наш ответ
                 outMess.setChatId(chatId);
-                //outMess.setText(response);
+                outMess.setText(response);
                 outMess.setReplyMarkup(replyKeyboardMarkup);
 
                 //Отправка в чат
                 execute(outMess);
+
             }
         } catch (TelegramApiException | IOException e) {
             //Обработка ошибки связанной с достижением лимита одного сообщения
@@ -123,40 +146,35 @@ public class Bot extends TelegramLongPollingBot {
     //ищет активные заявки
     private String getActiveOrders(String response) {
 
-        for (int row = 1; row <= RepaerFile.getLastRowNum(); row++){
-            if (!RepaerFile.getCell(row, 2).toString().equals("Закрыт")){
-                response += "\n" + row + ". " + RepaerFile.getCell(row, 3).toString();
+        for (int row = START_ROW; row <= RepaerFile.getLastRowNum(); row++){
+            if (!RepaerFile.getCell(row, STATUS_COLUMN).toString().equals("Закрыт")){
+                response += "\n" + (row + 1) + ". " + RepaerFile.getCell(row, NAME_OF_THE_TOOL_COLUMN).toString();
             }
         }
         return response;
     }
 
     public String parseMessage(String textMsg) {
-        String response;
+        String response = null;
 
         //Сравниваем текст пользователя с нашими командами, на основе этого формируем ответ
 
-        switch (textMsg){
+        switch (textMsg.toLowerCase()){
             case "/start" : response = "Чат-бот магазина 'Инструмент и крепежПриветствую'. Бот ищет цену товара по названию.";
                 System.out.println(response);
                 break;
             case "заявки" : response = "Активные заявки:";
+                RepaerFile.createExcel(EXCEL_DB_DIR_AND_NAME, 0); //переоткрывает книгу после каждого запроса (книгу после ввода новых данных нужно сохранять)
                 System.out.println(response);
                 mod = "заявки";
+                response = getActiveOrders(response);
+                System.out.println(response);
                 break;
             case "/shop all" : response = "Установлена зона поиска: Все магазины.";
                 mod = "all";
                 break;
-            default : if(isInteger(textMsg)){ID_order = Integer.parseInt(textMsg);} //если прислали число, то записываем его как id заявки
+            default : if(isInteger(textMsg)){ID_order = Integer.parseInt(textMsg); response = "Установлен заказ №" + ID_order + "\n";} //если прислали число, то записываем его как id заявки
         }
-
-        /*if (textMsg.equals("/start")) {
-            response = "Чат-бот магазина 'Инструмент и крепежПриветствую'. Бот ищет цену товара по названию.";
-        }
-        else{
-            //response = "Сообщение не распознано";
-            response = findProduct(textMsg);
-        }*/
 
         return response;
     }
@@ -177,10 +195,27 @@ public class Bot extends TelegramLongPollingBot {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //System.out.println(text);
-        //System.out.println(text.substring(text.indexOf("file_path") + "file_path".length() + 2).replaceAll("}", "").replaceAll("\"", ""));
 
         return text.substring(text.indexOf("file_path") + "file_path".length() + 2).replaceAll("}", "").replaceAll("\"", "");
+    }
+
+    //клавиатура
+    void initKeyboard()
+    {
+        //Создаем объект будущей клавиатуры и выставляем нужные настройки
+        replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        replyKeyboardMarkup.setResizeKeyboard(true); //подгоняем размер
+        replyKeyboardMarkup.setOneTimeKeyboard(true); //скрываем после использования
+
+        //Создаем список с рядами кнопок
+        ArrayList<KeyboardRow> keyboardRows = new ArrayList<KeyboardRow>();
+        //Создаем один ряд кнопок и добавляем его в список
+        KeyboardRow keyboardRow = new KeyboardRow();
+        keyboardRows.add(keyboardRow);
+        //Добавляем одну кнопку с текстом "Просвяти" наш ряд
+        keyboardRow.add(new KeyboardButton("Заявки"));
+        //добавляем лист с одним рядом кнопок в главный объект
+        replyKeyboardMarkup.setKeyboard(keyboardRows);
     }
 
     //проверка на int
