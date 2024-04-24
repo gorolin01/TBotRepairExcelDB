@@ -85,4 +85,58 @@ public class Settings {
         return properties.getProperty("bot_name");
     }
 
+    public void setStartRow(String startRow) {
+        properties.setProperty("start_row", startRow);
+        try {
+            properties.store(new FileOutputStream(file), null);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getStartRow() {
+        try {
+            properties.load(new FileInputStream(file));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return properties.getProperty("start_row");
+    }
+
+    public void setColStatusOrder(String colStatusOrder) {
+        properties.setProperty("col_status_order", colStatusOrder);
+        try {
+            properties.store(new FileOutputStream(file), null);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getColStatusOrder() {
+        try {
+            properties.load(new FileInputStream(file));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return properties.getProperty("col_status_order");
+    }
+
+    public void setColNameTool(String colNameTool) {
+        properties.setProperty("col_name_tool", colNameTool);
+        try {
+            properties.store(new FileOutputStream(file), null);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getColNameTool() {
+        try {
+            properties.load(new FileInputStream(file));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return properties.getProperty("col_name_tool");
+    }
+
 }

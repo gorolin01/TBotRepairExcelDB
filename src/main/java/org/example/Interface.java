@@ -61,35 +61,69 @@ public class Interface extends JPanel {
 
         //бот токен
         final JTextField botToken = new JTextField(40);
+        JTextArea botToken_description = new JTextArea("Токен: ");
+        botToken_description.setEditable(false);
         botToken.setEditable(true);
         botToken.setText(settings.getBotToken()); //загружаем токен
-        JButton saveBotToken = new JButton("Сохранить токен");
-        saveBotToken.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                settings.setBotToken(botToken.getText());    //записываем токен
-            }
-        });
 
         //имя бота
         final JTextField botName = new JTextField(40);
+        JTextArea botName_description = new JTextArea("Имя бота: ");
+        botName_description.setEditable(false);
         botName.setEditable(true);
         botName.setText(settings.getBotName()); //загружаем имя
-        JButton saveBotName = new JButton("Сохранить имя");
-        saveBotName.addActionListener(new ActionListener() {
+
+        //строка начала заявок
+        final JTextField startRow = new JTextField(10);
+        JTextArea startRow_description = new JTextArea("Строка начала заявок: ");
+        startRow_description.setEditable(false);
+        startRow.setEnabled(true);
+        startRow.setText(settings.getStartRow());
+
+        //номер колонки со статусом заявки
+        final JTextField colStatusOrder = new JTextField(10);
+        JTextArea colStatusOrder_description = new JTextArea("Номер колонки со статусом заявки: ");
+        colStatusOrder_description.setEditable(false);
+        colStatusOrder.setEnabled(true);
+        colStatusOrder.setText(settings.getColStatusOrder());
+
+        //номер колонки с названием инструмента
+        final JTextField colNameTool = new JTextField(10);
+        JTextArea colNameTool_description = new JTextArea("Номер колонки с названием инструмента: ");
+        colNameTool_description.setEditable(false);
+        colNameTool.setEnabled(true);
+        colNameTool.setText(settings.getColNameTool());
+
+        //кнопка сохранить настройки
+        JButton saveSettings = new JButton("Сохранить настройки");
+        saveSettings.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                settings.setBotName(botName.getText());    //записываем имя
+                //записываем все что есть в форме в файл проперти
+                //ПОКА ЧТО НЕТ ОБРАБОТКИ НЕВЕРНЫХ ДАННЫХ.
+                settings.setStartRow(startRow.getText());
+                settings.setColStatusOrder(colStatusOrder.getText());
+                settings.setColNameTool(colNameTool.getText());
+                settings.setBotToken(botToken.getText());
+                settings.setBotName(botName.getText());
             }
         });
-
 
         panelSettings.add(addExcelFile);
         panelSettings.add(excelAddress, "wrap");
         panelSettings.add(addPhotoAddress);
         panelSettings.add(photoAddress, "wrap");
-        panelSettings.add(saveBotToken);
+        panelSettings.add(botToken_description);
         panelSettings.add(botToken, "wrap");
-        panelSettings.add(saveBotName);
+        panelSettings.add(botName_description);
         panelSettings.add(botName, "wrap");
+        panelSettings.add(startRow_description);
+        panelSettings.add(startRow, "wrap");
+        panelSettings.add(colStatusOrder_description);
+        panelSettings.add(colStatusOrder, "wrap");
+        panelSettings.add(colNameTool_description);
+        panelSettings.add(colNameTool, "wrap");
+
+        panelSettings.add(saveSettings);    //кнопка сохранения
 
         frame.add(panelSettings, BorderLayout.WEST);
         frame.setVisible(true);

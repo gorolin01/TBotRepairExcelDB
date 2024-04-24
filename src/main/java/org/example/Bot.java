@@ -31,8 +31,8 @@ public class Bot extends TelegramLongPollingBot {
     private int ID_order;   //id заявки для которой нужно сохранить фото
 
     // НАСТРОЙКИ
-    private String PHOTO_DIR = "C:\\Users\\Cashless\\Desktop\\Проекты\\DataForTelegramBot\\TBotRepairExcelDB\\";   //директория, где буду сохраняться фото
-    private String EXCEL_DB_DIR_AND_NAME = "C:\\Users\\Cashless\\Desktop\\Проекты\\DataForTelegramBot\\TBotRepairExcelDB\\РЕМОНТ.xlsm"; //полный путь с именем к файлу excel с заявками
+    private String PHOTO_DIR = "I:\\WorkSpace\\TBotRepairExcelDB\\res\\";   //директория, где буду сохраняться фото
+    private String EXCEL_DB_DIR_AND_NAME = "I:\\WorkSpace\\TBotRepairExcelDB\\РЕМОНТ.xlsm"; //полный путь с именем к файлу excel с заявками
     private int START_ROW = 1;   //строка начала заявок
     private int STATUS_COLUMN = 1;   //номер колонки со статусом заявки
     private int NAME_OF_THE_TOOL_COLUMN = 2;    //номер колонки с названием инструмента
