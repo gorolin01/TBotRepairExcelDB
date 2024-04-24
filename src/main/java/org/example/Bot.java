@@ -25,20 +25,20 @@ public class Bot extends TelegramLongPollingBot {
     //вместо звездочек подставляйте свои данные
     final private String BOT_TOKEN = "7071384156:AAH1uOOPc98nGuO8ODPPGRBSMDvH61ucoyw";
     final private String BOT_NAME = "RepairDBPhoto_bot";
-    ReplyKeyboardMarkup replyKeyboardMarkup;
+    Keyboard keyboard;
     Excel RepaerFile = new Excel();
     private String mod;
     private int ID_order;   //id заявки для которой нужно сохранить фото
 
     // НАСТРОЙКИ
-    private String PHOTO_DIR = "I:\\WorkSpace\\TBotRepairExcelDB\\res\\";   //директория, где буду сохраняться фото
-    private String EXCEL_DB_DIR_AND_NAME = "I:\\WorkSpace\\TBotRepairExcelDB\\РЕМОНТ.xlsm"; //полный путь с именем к файлу excel с заявками
+    private String PHOTO_DIR = "C:\\Users\\Cashless\\Desktop\\Проекты\\DataForTelegramBot\\TBotRepairExcelDB\\";   //директория, где буду сохраняться фото
+    private String EXCEL_DB_DIR_AND_NAME = "C:\\Users\\Cashless\\Desktop\\Проекты\\DataForTelegramBot\\TBotRepairExcelDB\\РЕМОНТ.xlsm"; //полный путь с именем к файлу excel с заявками
     private int START_ROW = 1;   //строка начала заявок
     private int STATUS_COLUMN = 1;   //номер колонки со статусом заявки
     private int NAME_OF_THE_TOOL_COLUMN = 2;    //номер колонки с названием инструмента
 
     Bot() {
-        initKeyboard();
+        keyboard = new Keyboard();
     }
 
     @Override
@@ -89,7 +89,7 @@ public class Bot extends TelegramLongPollingBot {
 
                 outMess.setChatId(chatId);
                 outMess.setText(response);
-                outMess.setReplyMarkup(replyKeyboardMarkup);
+                outMess.setReplyMarkup(keyboard.getReplyKeyboardMarkup());
 
                 execute(outMess);
 
@@ -107,10 +107,10 @@ public class Bot extends TelegramLongPollingBot {
                 //Создаем объект класса SendMessage - наш будущий ответ пользователю
                 SendMessage outMess = new SendMessage();
 
-                //Добавляем в наше сообщение id чата а также наш ответ
+                //Добавляем в наше сообщение id чата, а также наш ответ
                 outMess.setChatId(chatId);
                 outMess.setText(response);
-                outMess.setReplyMarkup(replyKeyboardMarkup);
+                outMess.setReplyMarkup(keyboard.getReplyKeyboardMarkup());
 
                 //Отправка в чат
                 execute(outMess);
@@ -122,13 +122,13 @@ public class Bot extends TelegramLongPollingBot {
 
                 Message inMess = update.getMessage();
                 String chatId = inMess.getChatId().toString();
-                String response = "Слишком много совпадений. Пожалуйста укажите более подробную фразу поиска.";
+                String response = "Слишком много открытых заявок.";
 
                 SendMessage outMess = new SendMessage();
 
                 outMess.setChatId(chatId);
                 outMess.setText(response);
-                outMess.setReplyMarkup(replyKeyboardMarkup);
+                outMess.setReplyMarkup(keyboard.getReplyKeyboardMarkup());
 
                 //Отправка в чат
                 try {
@@ -146,12 +146,27 @@ public class Bot extends TelegramLongPollingBot {
     //ищет активные заявки
     private String getActiveOrders(String response) {
 
+        keyboard.refreshKeyboard();
+
         for (int row = START_ROW; row <= RepaerFile.getLastRowNum(); row++){
             if (!RepaerFile.getCell(row, STATUS_COLUMN).toString().equals("Закрыт")){
                 response += "\n" + (row + 1) + ". " + RepaerFile.getCell(row, NAME_OF_THE_TOOL_COLUMN).toString();
+                //добавить номер заявки на клавиатуру
+                keyboard.addItemToKeyboard(row + 1);
             }
         }
         return response;
+    }
+
+    //проверяет есть ли активные заявки true - есть
+    private boolean isOrders() {
+
+        for (int row = START_ROW; row <= RepaerFile.getLastRowNum(); row++){
+            if (!RepaerFile.getCell(row, STATUS_COLUMN).toString().equals("Закрыт")){
+                return true;
+            }
+        }
+        return false;
     }
 
     public String parseMessage(String textMsg) {
@@ -167,7 +182,9 @@ public class Bot extends TelegramLongPollingBot {
                 RepaerFile.createExcel(EXCEL_DB_DIR_AND_NAME, 0); //переоткрывает книгу после каждого запроса (книгу после ввода новых данных нужно сохранять)
                 System.out.println(response);
                 mod = "заявки";
-                response = getActiveOrders(response);
+                if (isOrders()) {
+                    response = getActiveOrders(response);
+                } else {response = "Активных заявок нет.";}
                 System.out.println(response);
                 break;
             case "/shop all" : response = "Установлена зона поиска: Все магазины.";
@@ -197,25 +214,6 @@ public class Bot extends TelegramLongPollingBot {
         }
 
         return text.substring(text.indexOf("file_path") + "file_path".length() + 2).replaceAll("}", "").replaceAll("\"", "");
-    }
-
-    //клавиатура
-    void initKeyboard()
-    {
-        //Создаем объект будущей клавиатуры и выставляем нужные настройки
-        replyKeyboardMarkup = new ReplyKeyboardMarkup();
-        replyKeyboardMarkup.setResizeKeyboard(true); //подгоняем размер
-        replyKeyboardMarkup.setOneTimeKeyboard(true); //скрываем после использования
-
-        //Создаем список с рядами кнопок
-        ArrayList<KeyboardRow> keyboardRows = new ArrayList<KeyboardRow>();
-        //Создаем один ряд кнопок и добавляем его в список
-        KeyboardRow keyboardRow = new KeyboardRow();
-        keyboardRows.add(keyboardRow);
-        //Добавляем одну кнопку с текстом "Просвяти" наш ряд
-        keyboardRow.add(new KeyboardButton("Заявки"));
-        //добавляем лист с одним рядом кнопок в главный объект
-        replyKeyboardMarkup.setKeyboard(keyboardRows);
     }
 
     //проверка на int
