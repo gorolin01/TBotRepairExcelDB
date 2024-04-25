@@ -14,6 +14,7 @@ public class Interface extends JPanel {
     private JPanel panelSettings = new JPanel(new MigLayout("","[right][center][center]","[][][]"));    //панель с элементами настройки
     //private File DBExcel_file;  //записываем файл базы данных excel
     private Settings settings;
+    Thread botThread;   //поток для бота
     Interface() {
         settings = new Settings();
     }
@@ -94,6 +95,27 @@ public class Interface extends JPanel {
         colNameTool.setEnabled(true);
         colNameTool.setText(settings.getColNameTool());
 
+        //кнопка запуска бота
+        final JButton startBot = new JButton("Запустить бота");
+        startBot.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                botThread = new Thread(new BotThread());
+                botThread.start();
+                startBot.setEnabled(false);
+            }
+        });
+
+        //кнопка остановки бота (НЕ МОГУ УБИТЬ ПОТОК И БОТА!)
+        /*JButton stopBot = new JButton("Остановить бота");
+        stopBot.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                botThread.stop();
+            }
+        });*/
+
+        //окно ввода пароля для авторизации
+
+
         //кнопка сохранить настройки
         JButton saveSettings = new JButton("Сохранить настройки");
         saveSettings.addActionListener(new ActionListener() {
@@ -122,6 +144,8 @@ public class Interface extends JPanel {
         panelSettings.add(colStatusOrder, "wrap");
         panelSettings.add(colNameTool_description);
         panelSettings.add(colNameTool, "wrap");
+        panelSettings.add(startBot, "wrap");
+        //panelSettings.add(stopBot, "wrap");
 
         panelSettings.add(saveSettings);    //кнопка сохранения
 

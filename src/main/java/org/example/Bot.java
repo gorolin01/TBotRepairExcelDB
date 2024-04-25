@@ -21,21 +21,23 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Bot extends TelegramLongPollingBot {
+
+    Settings settings = new Settings();
     //создаем две константы, присваиваем им значения токена и имя бота соответсвтенно
     //вместо звездочек подставляйте свои данные
-    final private String BOT_TOKEN = "7071384156:AAH1uOOPc98nGuO8ODPPGRBSMDvH61ucoyw";
-    final private String BOT_NAME = "RepairDBPhoto_bot";
+    final private String BOT_TOKEN = settings.getBotToken();
+    final private String BOT_NAME = settings.getBotName();
     Keyboard keyboard;
     Excel RepaerFile = new Excel();
     private String mod;
     private int ID_order;   //id заявки для которой нужно сохранить фото
 
     // НАСТРОЙКИ
-    private String PHOTO_DIR = "I:\\WorkSpace\\TBotRepairExcelDB\\res\\";   //директория, где буду сохраняться фото
-    private String EXCEL_DB_DIR_AND_NAME = "I:\\WorkSpace\\TBotRepairExcelDB\\РЕМОНТ.xlsm"; //полный путь с именем к файлу excel с заявками
-    private int START_ROW = 1;   //строка начала заявок
-    private int STATUS_COLUMN = 1;   //номер колонки со статусом заявки
-    private int NAME_OF_THE_TOOL_COLUMN = 2;    //номер колонки с названием инструмента
+    private String PHOTO_DIR = settings.getAddressPhotoDir() + "\\";   //директория, где буду сохраняться фото
+    private String EXCEL_DB_DIR_AND_NAME = settings.getAddressFileExcelDB(); //полный путь с именем к файлу excel с заявками
+    private int START_ROW = Integer.parseInt(settings.getStartRow());   //строка начала заявок
+    private int STATUS_COLUMN = Integer.parseInt(settings.getColStatusOrder());   //номер колонки со статусом заявки
+    private int NAME_OF_THE_TOOL_COLUMN = Integer.parseInt(settings.getColNameTool());    //номер колонки с названием инструмента
 
     Bot() {
         keyboard = new Keyboard();
@@ -150,6 +152,7 @@ public class Bot extends TelegramLongPollingBot {
 
         for (int row = START_ROW; row <= RepaerFile.getLastRowNum(); row++){
             if (!RepaerFile.getCell(row, STATUS_COLUMN).toString().equals("Закрыт")){
+                //System.out.println(RepaerFile.getCell(row, STATUS_COLUMN).getCellStyle().getFillForegroundColor()); //нет возможности получить цвет ячейки (методы сломаны в библиотеке)
                 response += "\n" + (row + 1) + ". " + RepaerFile.getCell(row, NAME_OF_THE_TOOL_COLUMN).toString();
                 //добавить номер заявки на клавиатуру
                 keyboard.addItemToKeyboard(row + 1);

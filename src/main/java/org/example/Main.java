@@ -11,11 +11,5 @@ public class Main {
         Interface gui = new Interface();
         gui.createAndShowGUI();
 
-        try {
-            TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
-            telegramBotsApi.registerBot(new Bot());
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
     }
 }
