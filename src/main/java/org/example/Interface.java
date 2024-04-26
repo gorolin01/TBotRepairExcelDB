@@ -80,7 +80,7 @@ public class Interface extends JPanel {
         botName.setText(settings.getBotName()); //загружаем имя
 
         //строка начала заявок
-        final JTextField startRow = new JTextField(10);
+        final JTextField startRow = new JTextField(4);
         JTextArea startRow_description = new JTextArea("Строка начала заявок: ");
         startRow_description.setEditable(false);
         startRow_description.setBackground(new Color(238,238,238));
@@ -88,7 +88,7 @@ public class Interface extends JPanel {
         startRow.setText(settings.getStartRow());
 
         //номер колонки со статусом заявки
-        final JTextField colStatusOrder = new JTextField(10);
+        final JTextField colStatusOrder = new JTextField(4);
         JTextArea colStatusOrder_description = new JTextArea("Номер колонки со статусом заявки: ");
         colStatusOrder_description.setEditable(false);
         colStatusOrder_description.setBackground(new Color(238,238,238));
@@ -96,7 +96,7 @@ public class Interface extends JPanel {
         colStatusOrder.setText(settings.getColStatusOrder());
 
         //номер колонки с названием инструмента
-        final JTextField colNameTool = new JTextField(10);
+        final JTextField colNameTool = new JTextField(4);
         JTextArea colNameTool_description = new JTextArea("Номер колонки с названием инструмента: ");
         colNameTool_description.setEditable(false);
         colNameTool_description.setBackground(new Color(238,238,238));
@@ -142,6 +142,7 @@ public class Interface extends JPanel {
                 botThread = new Thread(new BotThread());
                 botThread.start();
                 disableBtn(new ArrayList<>(Arrays.asList(addExcelFile,addPhotoAddress, saveSettings, startBot)));   //после запуска бота заблокировать все кнопки
+                disableTextField(new ArrayList<>(Arrays.asList(botToken, botName, startRow, colStatusOrder, colNameTool, passField))); //после запуска бота заблокировать все поля ввода
             }
         });
 
@@ -174,6 +175,12 @@ public class Interface extends JPanel {
     private void disableBtn (ArrayList<JButton> buttonArrayList) {
         for (JButton btn : buttonArrayList) {
             btn.setEnabled(false);
+        }
+    }
+
+    private void disableTextField (ArrayList<JTextField> textFieldsArrayList) {
+        for (JTextField textField : textFieldsArrayList) {
+            textField.setEditable(false);
         }
     }
 
