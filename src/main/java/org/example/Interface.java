@@ -8,13 +8,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Interface extends JPanel {
 
-    private JPanel panelSettings = new JPanel(new MigLayout("","[right][center][center]","[][][]"));    //панель с элементами настройки
+    private JPanel panelSettings = new JPanel(new MigLayout("","[right][left][center]","[][][]"));    //панель с элементами настройки
     //private File DBExcel_file;  //записываем файл базы данных excel
     private Settings settings;
     Thread botThread;   //поток для бота
+    private Authorization authorization = new Authorization();
     Interface() {
         settings = new Settings();
     }
@@ -29,7 +32,7 @@ public class Interface extends JPanel {
         final JTextField excelAddress = new JTextField(40);
         excelAddress.setEditable(false);
         excelAddress.setText(settings.getAddressFileExcelDB()); //загружаем путь
-        JButton addExcelFile = new JButton("Выбрать файл");
+        final JButton addExcelFile = new JButton("Выбрать файл");
         addExcelFile.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JFileChooser DBExcel_fileChooser = new JFileChooser();
@@ -46,7 +49,7 @@ public class Interface extends JPanel {
         final JTextField photoAddress = new JTextField(40);
         photoAddress.setEditable(false);
         photoAddress.setText(settings.getAddressPhotoDir()); //загружаем путь
-        JButton addPhotoAddress = new JButton("Задать путь");
+        final JButton addPhotoAddress = new JButton("Задать путь");
         addPhotoAddress.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JFileChooser PhotoAddress_fileChooser = new JFileChooser();
@@ -64,6 +67,7 @@ public class Interface extends JPanel {
         final JTextField botToken = new JTextField(40);
         JTextArea botToken_description = new JTextArea("Токен: ");
         botToken_description.setEditable(false);
+        botToken_description.setBackground(new Color(238,238,238));
         botToken.setEditable(true);
         botToken.setText(settings.getBotToken()); //загружаем токен
 
@@ -71,6 +75,7 @@ public class Interface extends JPanel {
         final JTextField botName = new JTextField(40);
         JTextArea botName_description = new JTextArea("Имя бота: ");
         botName_description.setEditable(false);
+        botName_description.setBackground(new Color(238,238,238));
         botName.setEditable(true);
         botName.setText(settings.getBotName()); //загружаем имя
 
@@ -78,6 +83,7 @@ public class Interface extends JPanel {
         final JTextField startRow = new JTextField(10);
         JTextArea startRow_description = new JTextArea("Строка начала заявок: ");
         startRow_description.setEditable(false);
+        startRow_description.setBackground(new Color(238,238,238));
         startRow.setEnabled(true);
         startRow.setText(settings.getStartRow());
 
@@ -85,6 +91,7 @@ public class Interface extends JPanel {
         final JTextField colStatusOrder = new JTextField(10);
         JTextArea colStatusOrder_description = new JTextArea("Номер колонки со статусом заявки: ");
         colStatusOrder_description.setEditable(false);
+        colStatusOrder_description.setBackground(new Color(238,238,238));
         colStatusOrder.setEnabled(true);
         colStatusOrder.setText(settings.getColStatusOrder());
 
@@ -92,18 +99,9 @@ public class Interface extends JPanel {
         final JTextField colNameTool = new JTextField(10);
         JTextArea colNameTool_description = new JTextArea("Номер колонки с названием инструмента: ");
         colNameTool_description.setEditable(false);
+        colNameTool_description.setBackground(new Color(238,238,238));
         colNameTool.setEnabled(true);
         colNameTool.setText(settings.getColNameTool());
-
-        //кнопка запуска бота
-        final JButton startBot = new JButton("Запустить бота");
-        startBot.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                botThread = new Thread(new BotThread());
-                botThread.start();
-                startBot.setEnabled(false);
-            }
-        });
 
         //кнопка остановки бота (НЕ МОГУ УБИТЬ ПОТОК И БОТА!)
         /*JButton stopBot = new JButton("Остановить бота");
@@ -114,12 +112,18 @@ public class Interface extends JPanel {
         });*/
 
         //окно ввода пароля для авторизации
-
+        final JTextField passField = new JTextField(10);
+        JTextArea passArea = new JTextArea("Пароль доступа к боту: ");
+        passField.setEnabled(true);
+        passArea.setEditable(false);
+        passArea.setBackground(new Color(238,238,238));
+        passField.setText(settings.getPassBot());
 
         //кнопка сохранить настройки
-        JButton saveSettings = new JButton("Сохранить настройки");
+        final JButton saveSettings = new JButton("Сохранить настройки");
         saveSettings.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                if (!settings.getPassBot().equals(passField.getText())) {authorization.removeAllUsers();}   //если пароль сменили, то разлогинит всех пользователей
                 //записываем все что есть в форме в файл проперти
                 //ПОКА ЧТО НЕТ ОБРАБОТКИ НЕВЕРНЫХ ДАННЫХ.
                 settings.setStartRow(startRow.getText());
@@ -127,6 +131,17 @@ public class Interface extends JPanel {
                 settings.setColNameTool(colNameTool.getText());
                 settings.setBotToken(botToken.getText());
                 settings.setBotName(botName.getText());
+                settings.setPassBot(passField.getText());
+            }
+        });
+
+        //кнопка запуска бота
+        final JButton startBot = new JButton("Запустить бота");
+        startBot.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                botThread = new Thread(new BotThread());
+                botThread.start();
+                disableBtn(new ArrayList<>(Arrays.asList(addExcelFile,addPhotoAddress, saveSettings, startBot)));   //после запуска бота заблокировать все кнопки
             }
         });
 
@@ -146,12 +161,20 @@ public class Interface extends JPanel {
         panelSettings.add(colNameTool, "wrap");
         panelSettings.add(startBot, "wrap");
         //panelSettings.add(stopBot, "wrap");
+        panelSettings.add(passArea);
+        panelSettings.add(passField, "wrap");
 
         panelSettings.add(saveSettings);    //кнопка сохранения
 
         frame.add(panelSettings, BorderLayout.WEST);
         frame.setVisible(true);
 
+    }
+
+    private void disableBtn (ArrayList<JButton> buttonArrayList) {
+        for (JButton btn : buttonArrayList) {
+            btn.setEnabled(false);
+        }
     }
 
 }

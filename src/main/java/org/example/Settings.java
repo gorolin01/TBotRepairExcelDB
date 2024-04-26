@@ -139,4 +139,22 @@ public class Settings {
         return properties.getProperty("col_name_tool");
     }
 
+    public void setPassBot(String passBot) {
+        properties.setProperty("pass_bot", passBot);
+        try {
+            properties.store(new FileOutputStream(file), null);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getPassBot() {
+        try {
+            properties.load(new FileInputStream(file));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return properties.getProperty("pass_bot");
+    }
+
 }

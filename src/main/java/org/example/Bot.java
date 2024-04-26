@@ -31,6 +31,7 @@ public class Bot extends TelegramLongPollingBot {
     Excel RepaerFile = new Excel();
     private String mod;
     private int ID_order;   //id заявки для которой нужно сохранить фото
+    private Authorization authorization = new Authorization();
 
     // НАСТРОЙКИ
     private String PHOTO_DIR = settings.getAddressPhotoDir() + "\\";   //директория, где буду сохраняться фото
@@ -56,6 +57,33 @@ public class Bot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         try {
+
+            //авторизация
+            if (!authorization.isAuthorized(update.getMessage().getFrom().getId())) {
+
+                SendMessage outMess = new SendMessage();
+                outMess.setChatId(update.getMessage().getChatId().toString());
+
+                //проверка пароля
+                if (update.hasMessage() && update.getMessage().hasText()) {
+                    if (!authorization.checkPass(update.getMessage().getText())) {
+                        outMess.setText("Неверный пароль!");
+                        execute(outMess);
+                    } else {
+                        authorization.addUser(update.getMessage().getFrom().getId());
+                        outMess.setText("Пароль принят!");
+                        execute(outMess);
+                        return;
+                    }
+                }
+
+                //отправка сообщения
+                outMess.setText("Вы не авторизированны. Пожалуйста, введите пароль.");
+                //outMess.setReplyMarkup(keyboard.getReplyKeyboardMarkup());
+                execute(outMess);
+
+                return;
+            }
 
             if (update.getMessage().hasPhoto()) {
 
@@ -104,7 +132,7 @@ public class Bot extends TelegramLongPollingBot {
                 //Достаем из inMess id чата пользователя
                 String chatId = inMess.getChatId().toString();
                 //Получаем текст сообщения пользователя, отправляем в написанный нами обработчик
-                String response = parseMessage(inMess.getText());
+                String response = parseMessage(inMess);
 
                 //Создаем объект класса SendMessage - наш будущий ответ пользователю
                 SendMessage outMess = new SendMessage();
@@ -172,28 +200,29 @@ public class Bot extends TelegramLongPollingBot {
         return false;
     }
 
-    public String parseMessage(String textMsg) {
+    public String parseMessage(Message Msg) {
         String response = null;
 
         //Сравниваем текст пользователя с нашими командами, на основе этого формируем ответ
 
-        switch (textMsg.toLowerCase()){
-            case "/start" : response = "Чат-бот магазина 'Инструмент и крепежПриветствую'. Бот ищет цену товара по названию.";
+        switch (Msg.getText().toLowerCase()){
+            case "/start" : response = "Привет!";
                 System.out.println(response);
                 break;
             case "заявки" : response = "Активные заявки:";
                 RepaerFile.createExcel(EXCEL_DB_DIR_AND_NAME, 0); //переоткрывает книгу после каждого запроса (книгу после ввода новых данных нужно сохранять)
                 System.out.println(response);
-                mod = "заявки";
+                //mod = "заявки";
                 if (isOrders()) {
                     response = getActiveOrders(response);
                 } else {response = "Активных заявок нет.";}
                 System.out.println(response);
                 break;
-            case "/shop all" : response = "Установлена зона поиска: Все магазины.";
-                mod = "all";
+            case "/exit" : response = "Вы вышли из аккаунта.";
+                //mod = "all";
+                authorization.removeUser(Msg.getFrom().getId());
                 break;
-            default : if(isInteger(textMsg)){ID_order = Integer.parseInt(textMsg); response = "Установлен заказ №" + ID_order + "\n";} //если прислали число, то записываем его как id заявки
+            default : if(isInteger(Msg.getText())){ID_order = Integer.parseInt(Msg.getText()); response = "Установлен заказ №" + ID_order + "\n";} //если прислали число, то записываем его как id заявки
         }
 
         return response;
