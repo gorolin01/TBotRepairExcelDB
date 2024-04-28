@@ -2,6 +2,7 @@ package org.example;
 
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.Voice;
@@ -61,26 +62,23 @@ public class Bot extends TelegramLongPollingBot {
             //авторизация
             if (!authorization.isAuthorized(update.getMessage().getFrom().getId())) {
 
-                SendMessage outMess = new SendMessage();
-                outMess.setChatId(update.getMessage().getChatId().toString());
-
                 //проверка пароля
                 if (update.hasMessage() && update.getMessage().hasText()) {
                     if (!authorization.checkPass(update.getMessage().getText())) {
-                        outMess.setText("Неверный пароль!");
-                        execute(outMess);
+                        sendMsg(update, "Неверный пароль!");
                     } else {
                         authorization.addUser(update.getMessage().getFrom().getId());
-                        outMess.setText("Пароль принят!");
-                        execute(outMess);
+
+                        delLastMsg(update); //удаляем сообщение(пароль)
+
+                        sendMsg(update,"Пароль принят!");
                         return;
                     }
                 }
 
                 //отправка сообщения
-                outMess.setText("Вы не авторизированны. Пожалуйста, введите пароль.");
+                sendMsg(update,"Вы не авторизированны. Пожалуйста, введите пароль.");
                 //outMess.setReplyMarkup(keyboard.getReplyKeyboardMarkup());
-                execute(outMess);
 
                 return;
             }
@@ -112,63 +110,16 @@ public class Bot extends TelegramLongPollingBot {
                     //end
                 } else {response = "Не был задан номер заявки!";}
 
-                Message inMess = update.getMessage();
-                String chatId = inMess.getChatId().toString();
-
-                SendMessage outMess = new SendMessage();
-
-                outMess.setChatId(chatId);
-                outMess.setText(response);
-                outMess.setReplyMarkup(keyboard.getReplyKeyboardMarkup());
-
-                execute(outMess);
+                sendMsg(update, response, keyboard);
 
             }
 
             if (update.hasMessage() && update.getMessage().hasText()) {
 
-                //Извлекаем из объекта сообщение пользователя
-                Message inMess = update.getMessage();
-                //Достаем из inMess id чата пользователя
-                String chatId = inMess.getChatId().toString();
-                //Получаем текст сообщения пользователя, отправляем в написанный нами обработчик
-                String response = parseMessage(inMess);
-
-                //Создаем объект класса SendMessage - наш будущий ответ пользователю
-                SendMessage outMess = new SendMessage();
-
-                //Добавляем в наше сообщение id чата, а также наш ответ
-                outMess.setChatId(chatId);
-                outMess.setText(response);
-                outMess.setReplyMarkup(keyboard.getReplyKeyboardMarkup());
-
-                //Отправка в чат
-                execute(outMess);
+                sendMsg(update, parseMessage(update.getMessage()), keyboard);
 
             }
-        } catch (TelegramApiException | IOException e) {
-            //Обработка ошибки связанной с достижением лимита одного сообщения
-            if (e.getLocalizedMessage().equals("Error sending message: [400] Bad Request: message is too long")) {
-
-                Message inMess = update.getMessage();
-                String chatId = inMess.getChatId().toString();
-                String response = "Слишком много открытых заявок.";
-
-                SendMessage outMess = new SendMessage();
-
-                outMess.setChatId(chatId);
-                outMess.setText(response);
-                outMess.setReplyMarkup(keyboard.getReplyKeyboardMarkup());
-
-                //Отправка в чат
-                try {
-                    execute(outMess);
-                } catch (TelegramApiException telegramApiException) {
-                    telegramApiException.printStackTrace();
-                }
-
-            }
-            System.out.println(e.getLocalizedMessage());
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -260,6 +211,54 @@ public class Bot extends TelegramLongPollingBot {
         }
 
         return true;
+    }
+
+    //удаляет последнее сообщение
+    public void delLastMsg (Update update) {
+        try {
+            DeleteMessage deleteMessage = new DeleteMessage();
+            deleteMessage.setChatId(update.getMessage().getChatId());
+            deleteMessage.setMessageId(update.getMessage().getMessageId());
+            execute(deleteMessage);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //отправка сообщения
+    public void sendMsg (Update update, String response) {
+        try {
+            SendMessage outMess = new SendMessage();
+            outMess.setChatId(update.getMessage().getChatId().toString());
+            outMess.setText(response);
+            execute(outMess);
+        } catch (TelegramApiException e) {
+
+            //Обработка ошибки связанной с достижением лимита одного сообщения
+            if (e.getLocalizedMessage().equals("Error sending message: [400] Bad Request: message is too long")) {
+                sendMsg(update, "Слишком много открытых заявок.");
+            }
+            System.out.println(e.getLocalizedMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void sendMsg (Update update, String response, Keyboard keyboard) {
+        try {
+            SendMessage outMess = new SendMessage();
+            outMess.setChatId(update.getMessage().getChatId().toString());
+            outMess.setText(response);
+            outMess.setReplyMarkup(keyboard.getReplyKeyboardMarkup());
+            execute(outMess);
+        } catch (TelegramApiException e) {
+
+            //Обработка ошибки связанной с достижением лимита одного сообщения
+            if (e.getLocalizedMessage().equals("Error sending message: [400] Bad Request: message is too long")) {
+                sendMsg(update, "Слишком много открытых заявок.", keyboard);
+            }
+            System.out.println(e.getLocalizedMessage());
+            e.printStackTrace();
+        }
     }
 
 }
