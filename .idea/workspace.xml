@@ -5,13 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="43809138-89ed-4a81-8031-5cee3f12a2e1" name="Changes" comment="Changes">
-      <change afterPath="$PROJECT_DIR$/log.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/Logger.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/settings.properties" beforeDir="false" afterPath="$PROJECT_DIR$/settings.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Authorization.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/Authorization.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Bot.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/Bot.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user_list.properties" beforeDir="false" afterPath="$PROJECT_DIR$/user_list.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Logger.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/Logger.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,6 +75,60 @@
       <option name="presentableId" value="Default" />
       <updated>1713869010051</updated>
     </task>
+    <task id="LOCAL-00001" summary="Changes">
+      <created>1714164334498</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1714164334498</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="Changes" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="1347" y="273" key="CommitChangelistDialog2" timestamp="1714164333915">
+      <screen x="0" y="0" width="3440" height="1410" />
+    </state>
+    <state x="1347" y="273" key="CommitChangelistDialog2/0.0.3440.1410@0.0.3440.1410" timestamp="1714164333915" />
+    <state x="1355" y="610" key="DetectedRootsChooserDialog" timestamp="1713899042682">
+      <screen x="0" y="0" width="3440" height="1410" />
+    </state>
+    <state x="1355" y="610" key="DetectedRootsChooserDialog/0.0.3440.1410@0.0.3440.1410" timestamp="1713899042682" />
+    <state x="1264" y="456" key="FileChooserDialogImpl" timestamp="1713975967124">
+      <screen x="0" y="0" width="3440" height="1410" />
+    </state>
+    <state x="1264" y="456" key="FileChooserDialogImpl/0.0.3440.1410@0.0.3440.1410" timestamp="1713975967124" />
+    <state width="3397" height="241" key="GridCell.Tab.0.bottom" timestamp="1714336648869">
+      <screen x="0" y="0" width="3440" height="1410" />
+    </state>
+    <state width="3397" height="241" key="GridCell.Tab.0.bottom/0.0.3440.1410@0.0.3440.1410" timestamp="1714336648869" />
+    <state width="3397" height="241" key="GridCell.Tab.0.center" timestamp="1714336648869">
+      <screen x="0" y="0" width="3440" height="1410" />
+    </state>
+    <state width="3397" height="241" key="GridCell.Tab.0.center/0.0.3440.1410@0.0.3440.1410" timestamp="1714336648869" />
+    <state width="3397" height="241" key="GridCell.Tab.0.left" timestamp="1714336648869">
+      <screen x="0" y="0" width="3440" height="1410" />
+    </state>
+    <state width="3397" height="241" key="GridCell.Tab.0.left/0.0.3440.1410@0.0.3440.1410" timestamp="1714336648869" />
+    <state width="3397" height="241" key="GridCell.Tab.0.right" timestamp="1714336648869">
+      <screen x="0" y="0" width="3440" height="1410" />
+    </state>
+    <state width="3397" height="241" key="GridCell.Tab.0.right/0.0.3440.1410@0.0.3440.1410" timestamp="1714336648869" />
+    <state x="1038" y="289" key="SettingsEditor" timestamp="1713899045656">
+      <screen x="0" y="0" width="3440" height="1410" />
+    </state>
+    <state x="1038" y="289" key="SettingsEditor/0.0.3440.1410@0.0.3440.1410" timestamp="1713899045656" />
+    <state x="1312" y="438" key="Vcs.Push.Dialog.v2" timestamp="1714164337138">
+      <screen x="0" y="0" width="3440" height="1410" />
+    </state>
+    <state x="1312" y="438" key="Vcs.Push.Dialog.v2/0.0.3440.1410@0.0.3440.1410" timestamp="1714164337138" />
+    <state x="1537" y="619" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1714322919027">
+      <screen x="0" y="0" width="3440" height="1410" />
+    </state>
+    <state x="1537" y="619" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.3440.1410@0.0.3440.1410" timestamp="1714322919027" />
   </component>
 </project>
