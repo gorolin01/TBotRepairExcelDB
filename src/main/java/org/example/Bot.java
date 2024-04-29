@@ -6,7 +6,9 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.Voice;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -19,6 +21,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Bot extends TelegramLongPollingBot {
@@ -33,6 +36,7 @@ public class Bot extends TelegramLongPollingBot {
     private String mod;
     private int ID_order;   //id заявки для которой нужно сохранить фото
     private Authorization authorization = new Authorization();
+    private Logger logger = new Logger();
 
     // НАСТРОЙКИ
     private String PHOTO_DIR = settings.getAddressPhotoDir() + "\\";   //директория, где буду сохраняться фото
@@ -58,7 +62,7 @@ public class Bot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         try {
-
+            logger.saveLogMessage(update);  //вызов логгера
             //авторизация
             if (!authorization.isAuthorized(update.getMessage().getFrom().getId())) {
 
@@ -153,9 +157,27 @@ public class Bot extends TelegramLongPollingBot {
 
     public String parseMessage(Message Msg) {
         String response = null;
+        Long userID = Msg.getFrom().getId();    //записываем ID пользователя
+        //System.out.println("Имя: " + Msg.getFrom().getFirstName() + " " + Msg.getFrom().getLastName());
 
+        //свитч внешний определяет права доступа к командам разным группам пользователей
+        //!!!пока оставлю такую реализацию, но нужно сделать через перечень команд в проперти файле
+        switch (authorization.getUserPermission(userID)) {
+            case "admin":
+                response = adminsCommands(Msg);
+                break;
+            case "user":
+                response = usersCommands(Msg);
+                break;
+            default:
+        }
+
+        return response;
+    }
+
+    private String usersCommands(Message Msg) {
+        String response = null;
         //Сравниваем текст пользователя с нашими командами, на основе этого формируем ответ
-
         switch (Msg.getText().toLowerCase()){
             case "/start" : response = "Привет!";
                 System.out.println(response);
@@ -163,17 +185,30 @@ public class Bot extends TelegramLongPollingBot {
             case "заявки" : response = "Активные заявки:";
                 RepaerFile.createExcel(EXCEL_DB_DIR_AND_NAME, 0); //переоткрывает книгу после каждого запроса (книгу после ввода новых данных нужно сохранять)
                 System.out.println(response);
-                //mod = "заявки";
                 if (isOrders()) {
                     response = getActiveOrders(response);
                 } else {response = "Активных заявок нет.";}
                 System.out.println(response);
                 break;
             case "/exit" : response = "Вы вышли из аккаунта.";
-                //mod = "all";
                 authorization.removeUser(Msg.getFrom().getId());
                 break;
             default : if(isInteger(Msg.getText())){ID_order = Integer.parseInt(Msg.getText()); response = "Установлен заказ №" + ID_order + "\n";} //если прислали число, то записываем его как id заявки
+        }
+        return response;
+    }
+
+    private String adminsCommands(Message Msg) {
+        String response = null;
+        response = usersCommands(Msg);   //администратору доступны все команды пользователя
+
+        //Сравниваем текст пользователя с нашими командами, на основе этого формируем ответ
+        switch (Msg.getText().toLowerCase()){
+            case "/shot down" : response = "Сервер отключен!";   //выключение сервера
+                System.out.println(response);
+                sendMsg(Msg, response);
+                System.exit(0);
+                break;
         }
 
         return response;
@@ -243,12 +278,46 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
+    public void sendMsg (Message Msg, String response) {
+        try {
+            SendMessage outMess = new SendMessage();
+            outMess.setChatId(Msg.getChatId().toString());
+            outMess.setText(response);
+            execute(outMess);
+        } catch (TelegramApiException e) {
+
+            //Обработка ошибки связанной с достижением лимита одного сообщения
+            if (e.getLocalizedMessage().equals("Error sending message: [400] Bad Request: message is too long")) {
+                sendMsg(Msg, "Слишком много открытых заявок.");
+            }
+            System.out.println(e.getLocalizedMessage());
+            e.printStackTrace();
+        }
+    }
+
     public void sendMsg (Update update, String response, Keyboard keyboard) {
         try {
             SendMessage outMess = new SendMessage();
             outMess.setChatId(update.getMessage().getChatId().toString());
             outMess.setText(response);
             outMess.setReplyMarkup(keyboard.getReplyKeyboardMarkup());
+
+            //InlineKeyboardMarkup пока что на реализации
+           /* InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+            List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+            List<InlineKeyboardButton> rowInline = new ArrayList<>();
+
+            InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton("Update message text");
+            inlineKeyboardButton.setCallbackData("update_msg_text");
+            rowInline.add(inlineKeyboardButton);
+            // Set the keyboard to the markup
+            rowsInline.add(rowInline);
+            // Add it to the message
+            markupInline.setKeyboard(rowsInline);
+            outMess.setReplyMarkup(markupInline);*/
+            //InlineKeyboardMarkup (для обработки ответа от инлайн клавиатуры нужно использовать условие update.hasCallbackQuery() в главном методе)
+            //https://github.com/MonsterDeveloper/java-telegram-bot-tutorial/blob/master/lesson-6.-inline-keyboards-and-editing-messages-text.md
+
             execute(outMess);
         } catch (TelegramApiException e) {
 

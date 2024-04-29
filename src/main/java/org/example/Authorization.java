@@ -12,6 +12,10 @@ public class Authorization {
     Properties properties;
     File file;
 
+    //константы для statusName
+    public String ADMIN = "admin";
+    public String USER = "user";
+
     Authorization () {
         properties = new Properties();
         file = new File("user_list.properties");
@@ -33,7 +37,7 @@ public class Authorization {
 
     //зарегистрировать пользователя
     public void addUser (Long userId) {
-        properties.setProperty(userId.toString(), "users"); //пока что система иерархии не реализованна (все пользователи имеют статус users)
+        properties.setProperty(userId.toString(), "user"); //пока что система иерархии не реализованна (все пользователи имеют статус users)
         try {
             properties.store(new FileOutputStream(file), null);
         } catch (IOException e) {
@@ -65,6 +69,28 @@ public class Authorization {
     //удалить пользователя
     public void removeUser (Object userId) {
         properties.remove(userId.toString());
+        try {
+            properties.store(new FileOutputStream(file), null);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //реализация Permission
+    //получить группу доступа пользователя
+    public String getUserPermission(Long userId) {
+        try {
+            properties.load(new FileInputStream(file));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return properties.getProperty(userId.toString());
+
+    }
+
+    //изменить группу доступа для пользователя
+    public void addUserPermission(Long userId, String statusName) {
+        properties.setProperty(userId.toString(), statusName);
         try {
             properties.store(new FileOutputStream(file), null);
         } catch (IOException e) {
