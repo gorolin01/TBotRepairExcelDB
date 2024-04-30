@@ -20,13 +20,6 @@ public class Logger {
         try {
             String result = "";
 
-            /*//считываем все из файла
-            FileReader fileReader = new FileReader(file);
-            int c;
-            while((c = fileReader.read()) != -1){
-                result += (char)c;
-            }*/
-
             //запись логов
             result += update.getMessage().getFrom().getId() + " | ";
             result += update.getMessage().getFrom().getFirstName() + " | ";
@@ -39,12 +32,9 @@ public class Logger {
             result += update.getMessage().getDate() + " | ";
             Calendar calendar = new GregorianCalendar(); result += calendar.getTime() + "\n";
 
+            //запись в файл
             Files.write(Paths.get("log.txt"), result.getBytes(), StandardOpenOption.APPEND);
 
-           /* //запись в файл
-            FileWriter fileWriter = new FileWriter(file);
-            fileWriter.write(result);
-            fileWriter.flush();*/
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -22,6 +22,7 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Scanner;
 
 public class Bot extends TelegramLongPollingBot {
@@ -37,6 +38,7 @@ public class Bot extends TelegramLongPollingBot {
     private int ID_order;   //id заявки для которой нужно сохранить фото
     private Authorization authorization = new Authorization();
     private Logger logger = new Logger();
+    BotDefaultMsg botDefaultMsg = new BotDefaultMsg();
 
     // НАСТРОЙКИ
     private String PHOTO_DIR = settings.getAddressPhotoDir() + "\\";   //директория, где буду сохраняться фото
@@ -63,25 +65,25 @@ public class Bot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         try {
             logger.saveLogMessage(update);  //вызов логгера
+
             //авторизация
             if (!authorization.isAuthorized(update.getMessage().getFrom().getId())) {
 
                 //проверка пароля
                 if (update.hasMessage() && update.getMessage().hasText()) {
                     if (!authorization.checkPass(update.getMessage().getText())) {
-                        sendMsg(update, "Неверный пароль!");
+                        delLastMsg(update); //удаляем сообщение(неправильный пароль)
+                        sendMsg(update, botDefaultMsg.getBotMsg(0));
                     } else {
                         authorization.addUser(update.getMessage().getFrom().getId());
-
                         delLastMsg(update); //удаляем сообщение(пароль)
-
-                        sendMsg(update,"Пароль принят!");
+                        sendMsg(update,botDefaultMsg.getBotMsg(1));
                         return;
                     }
                 }
 
                 //отправка сообщения
-                sendMsg(update,"Вы не авторизированны. Пожалуйста, введите пароль.");
+                sendMsg(update,botDefaultMsg.getBotMsg(2));
                 //outMess.setReplyMarkup(keyboard.getReplyKeyboardMarkup());
 
                 return;
@@ -110,9 +112,9 @@ public class Bot extends TelegramLongPollingBot {
                     inputStream.close();
                     outputStream.close();
 
-                    response = "Фото получено!";
+                    response = botDefaultMsg.getBotMsg(3);
                     //end
-                } else {response = "Не был задан номер заявки!";}
+                } else {response = botDefaultMsg.getBotMsg(4);}
 
                 sendMsg(update, response, keyboard);
 
@@ -175,36 +177,38 @@ public class Bot extends TelegramLongPollingBot {
         return response;
     }
 
+    //команды пользователя со статусом "user"
     private String usersCommands(Message Msg) {
         String response = null;
         //Сравниваем текст пользователя с нашими командами, на основе этого формируем ответ
         switch (Msg.getText().toLowerCase()){
-            case "/start" : response = "Привет!";
+            case "/start" : response = botDefaultMsg.getBotMsg(5);
                 System.out.println(response);
                 break;
-            case "заявки" : response = "Активные заявки:";
+            case "заявки" : response = botDefaultMsg.getBotMsg(6);
                 RepaerFile.createExcel(EXCEL_DB_DIR_AND_NAME, 0); //переоткрывает книгу после каждого запроса (книгу после ввода новых данных нужно сохранять)
                 System.out.println(response);
                 if (isOrders()) {
                     response = getActiveOrders(response);
-                } else {response = "Активных заявок нет.";}
+                } else {response = botDefaultMsg.getBotMsg(7);}
                 System.out.println(response);
                 break;
-            case "/exit" : response = "Вы вышли из аккаунта.";
+            case "/exit" : response = botDefaultMsg.getBotMsg(8);
                 authorization.removeUser(Msg.getFrom().getId());
                 break;
-            default : if(isInteger(Msg.getText())){ID_order = Integer.parseInt(Msg.getText()); response = "Установлен заказ №" + ID_order + "\n";} //если прислали число, то записываем его как id заявки
+            default : if(isInteger(Msg.getText())){ID_order = Integer.parseInt(Msg.getText()); response = botDefaultMsg.getBotMsg(9) + ID_order + "\n";} //если прислали число, то записываем его как id заявки
         }
         return response;
     }
 
+    //команды пользователя со статусом "admin"
     private String adminsCommands(Message Msg) {
         String response = null;
         response = usersCommands(Msg);   //администратору доступны все команды пользователя
 
         //Сравниваем текст пользователя с нашими командами, на основе этого формируем ответ
         switch (Msg.getText().toLowerCase()){
-            case "/shot down" : response = "Сервер отключен!";   //выключение сервера
+            case "/shot down" : response = botDefaultMsg.getBotMsg(10);   //выключение сервера
                 System.out.println(response);
                 sendMsg(Msg, response);
                 System.exit(0);
@@ -271,7 +275,7 @@ public class Bot extends TelegramLongPollingBot {
 
             //Обработка ошибки связанной с достижением лимита одного сообщения
             if (e.getLocalizedMessage().equals("Error sending message: [400] Bad Request: message is too long")) {
-                sendMsg(update, "Слишком много открытых заявок.");
+                sendMsg(update, botDefaultMsg.getBotMsg(11));
             }
             System.out.println(e.getLocalizedMessage());
             e.printStackTrace();
@@ -288,7 +292,7 @@ public class Bot extends TelegramLongPollingBot {
 
             //Обработка ошибки связанной с достижением лимита одного сообщения
             if (e.getLocalizedMessage().equals("Error sending message: [400] Bad Request: message is too long")) {
-                sendMsg(Msg, "Слишком много открытых заявок.");
+                sendMsg(Msg, botDefaultMsg.getBotMsg(11));
             }
             System.out.println(e.getLocalizedMessage());
             e.printStackTrace();
@@ -323,7 +327,7 @@ public class Bot extends TelegramLongPollingBot {
 
             //Обработка ошибки связанной с достижением лимита одного сообщения
             if (e.getLocalizedMessage().equals("Error sending message: [400] Bad Request: message is too long")) {
-                sendMsg(update, "Слишком много открытых заявок.", keyboard);
+                sendMsg(update, botDefaultMsg.getBotMsg(11), keyboard);
             }
             System.out.println(e.getLocalizedMessage());
             e.printStackTrace();
