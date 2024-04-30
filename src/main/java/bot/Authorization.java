@@ -1,10 +1,9 @@
-package org.example;
+package bot;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.Properties;
 
 public class Authorization {

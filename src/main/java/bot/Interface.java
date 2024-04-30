@@ -1,4 +1,4 @@
-package org.example;
+package bot;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -6,8 +6,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 

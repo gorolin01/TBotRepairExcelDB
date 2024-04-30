@@ -1,4 +1,4 @@
-package org.example;
+package bot;
 
 import org.apache.xmlbeans.impl.xb.ltgfmt.TestCase;
 import org.telegram.telegrambots.meta.api.objects.Update;

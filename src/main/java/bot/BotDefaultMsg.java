@@ -1,4 +1,4 @@
-package org.example;
+package bot;
 
 import java.io.*;
 import java.nio.CharBuffer;
