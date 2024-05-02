@@ -108,10 +108,11 @@ public class Excel {
 
         XSSFWorkbook book = null;
         try {
-            book = (XSSFWorkbook) WorkbookFactory.create(new File(filename));
+            //book = (XSSFWorkbook) WorkbookFactory.create(new File(filename)); //эта ебаторика не работает в собранном файле!!!
+            book = new XSSFWorkbook(new File(filename));
         } catch (InvalidFormatException e) {
             e.printStackTrace();
-        } catch (IOException e) {
+        } catch (IOException | org.apache.poi.openxml4j.exceptions.InvalidFormatException e) {
             e.printStackTrace();
         }
         return book;
