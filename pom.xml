@@ -4,9 +4,61 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.example</groupId>
+    <groupId>bot</groupId>
     <artifactId>TBotRepairExcelDB</artifactId>
     <version>1.0-SNAPSHOT</version>
+
+   <!-- <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.1</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <echo>CURRENT ENV IS: ${app.env}</echo>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>env-dev</id>
+            <properties>
+                <app.env>DEV</app.env>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>env-dev</id>
+            <properties>
+                <app.env>PROD</app.env>
+            </properties>
+        </profile>
+    </profiles>-->
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>repo-id</id>
+            <name>my snapshot repository</name>
+            <url>file:///path/to/snapshot/repo</url>
+        </snapshotRepository>
+        <repository>
+            <id>repo-id2</id>
+            <name>my repository</name>
+            <url>file:///path/to/repo</url>
+        </repository>
+    </distributionManagement>
 
     <build>
         <plugins>
@@ -17,6 +69,29 @@
                     <source>8</source>
                     <target>8</target>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.7.1</version>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass>bot.Main</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -34,17 +109,23 @@
             <version>6.9.7.0</version>
         </dependency>
 
-        <!--<dependency>
+       <!-- <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
             <version>5.0.0</version>
         </dependency>-->
 
         <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.5</version>
+        </dependency>
+
+       <!-- <dependency>
             <groupId>com.miglayout</groupId>
             <artifactId>miglayout</artifactId>
             <version>3.7.4</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>com.miglayout</groupId>
             <artifactId>miglayout</artifactId>
@@ -53,7 +134,7 @@
         <dependency>
             <groupId>com.miglayout</groupId>
             <artifactId>miglayout-swing</artifactId>
-            <version>11.1</version>
+            <version>5.2</version>
         </dependency>
 
     </dependencies>
